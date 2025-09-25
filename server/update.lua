@@ -1,25 +1,47 @@
-local script = GetCurrentResourceName()
-
-local function checkVersion(err, responseText, headers)
-    local curVersion = LoadResourceFile(script, "version")
-    local version = string.gsub(curVersion, "%s+", "")
-    if responseText == nil then
-        print("[^1"..script.."^7] Check for script update ^1FAILED^7")
-        return
-    end
-    if version ~= responseText and tonumber(version) < tonumber(responseText) then
-        print("^1----------------------------------------------------------------------------------^7")
-        print("[^3"..script.."^7] is outdated, latest version is: ^2"..responseText.."^7, installed version: ^1"..version.."^7!\nupdate from https://github.com/MaDHouSe79/"..script.."")
-        print("^1----------------------------------------------------------------------------------^7")
-    elseif tonumber(version) > tonumber(responseText) then
-        print("^3----------------------------------------------------------------------------------^7")
-        print("[^3"..script.."^7] git version is: ^2"..responseText.."^7, installed version: ^1"..version.."^7!")
-        print("^3----------------------------------------------------------------------------------^7")
-    else
-        print("[^2"..script.."^7] is up to date (^2"..version.."^7) ")
+local function checkVersion(err, github, headers)
+    local script = GetCurrentResourceName()
+    local insversion, gitversion, cur_inst_version, cur_git_version = '0.0.0', '0.0.0', '0.0.0', '0.0.0'
+    local notes = ""
+    local installed = LoadResourceFile(script, "version")
+    if err == 200 then
+        if github ~= nil then
+            if string.find(github, "{") and string.find(github, "}") then
+                github = json.decode(github)
+                cur_git_version = github.version
+                gitversion = string.gsub(cur_git_version, '%.', '')
+                if github.message ~= nil then notes = "[Release Notes:^2" .. tostring(github.message) .. "^0]" end
+            else
+                cur_git_version = github
+                gitversion = string.gsub(github, "%s+", "")
+            end
+            if string.find(installed, "{") and string.find(installed, "}") then
+                installed = json.decode(installed)
+                cur_inst_version = installed.version
+                insversion = string.gsub(cur_inst_version,'%.', '')
+            else
+                cur_inst_version = installed
+                insversion = string.gsub(installed, "%s+", "")
+            end
+            cur_inst_version = string.gsub(cur_inst_version, "%s+", "")
+            cur_git_version = string.gsub(cur_git_version, "%s+", "")
+            if insversion == gitversion then
+                print("^0[^2" .. script:upper() .. "^0] - ^0[^4UPDATE CHECK^0] - [^3Installed^0:^2"..cur_inst_version.."^0] [^3Github^0:^2"..cur_git_version.."^0] [Status:^2Success^0]")
+            elseif insversion < gitversion then
+                print("^0[^2" .. script:upper() .. "^0] - ^0[^4UPDATE CHECK^0] - [^3Installed^0:^2"..cur_inst_version.."^0] [^3Github^0:^2"..cur_git_version.."^0] [Status:^1Outdated^0]")
+            elseif insversion > gitversion then
+                print("^0[^2" .. script:upper() .. "^0] - ^0[^4UPDATE CHECK^0] - [^3Installed^0:^2"..cur_inst_version.."^0] [^3Github^0:^2"..cur_git_version.."^0] [Status:^1Failed^0]")
+            end
+        elseif github == nil then
+            print("^0[^2" .. script:upper() .. "^0] - ^0[^4UPDATE CHECK^0] - [^3Installed^0:^2" .. cur_inst_version .. "^0] - ^0Unable to connect to ^3Github^0 host. ^0[STATUS:^1OFFLINE^0]")
+        end
+    elseif err == 404 then
+        print("^0[^2" .. script:upper() .. "^0] - ^0[^4UPDATE CHECK^0] - [^3Installed^0:^2" .. cur_inst_version .. "^0] - ^0Unable to connect to ^3Github^0 host. ^0[STATUS:^1OFFLINE^0]")
     end
 end
 
-Citizen.CreateThread( function()
-    PerformHttpRequest("https://raw.githubusercontent.com".."/MaDHouSe79/"..script.."/master/version", checkVersion, "GET")
+AddEventHandler('onResourceStart', function(resource)
+    if resource == GetCurrentResourceName() then
+        Wait(3000)
+        PerformHttpRequest("https://raw.githubusercontent.com/MaDHouSe79/" .. resource .. "/master/version", checkVersion, "GET")
+    end
 end)
