@@ -56,7 +56,7 @@ end
 
 local function GetWheelHit(vehicle)
     local coords = GetEntityCoords(vehicle)
-    local wheelIndex, location, heading = GetClosestVehicleNodeWithHeading(coords.x, coords.y, coords.z, 0, 3.0, 0)
+    local wheelIndex, _, _ = GetClosestVehicleNodeWithHeading(coords.x, coords.y, coords.z, 0, 3.0, 0)
     return wheelIndex
 end
 
@@ -160,3 +160,4 @@ CreateThread(function()
         Wait(sleep)
     end
 end)
+
