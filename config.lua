@@ -4,6 +4,7 @@ Config.MaxAngleForChangeToCrash = 15 -- 15 is default.
 Config.MinDriveSpeedChangeToCrash = 20.0 -- min speed before you can flipover.
 Config.ReduseVehicleHealthWhenCrashed = 100.0 -- default 100 this will be -100.0 from the curent health.
 Config.WaitAfterCrashBeforePlayerCanDrive = 2000 -- default 2 secs. (2000 = 2 secs)
+Config.WheelBreakSpeed = 50 -- Speed at which the wheel breaks
 
 -- this will ignore wheel types.
 Config.IngnoreWheelTypes = {
@@ -20,4 +21,11 @@ Config.IngnoreWheelTypes = {
     [10] = true, -- SUPERMOD3 // Open Wheel
     [11] = true, -- SUPERMOD4 // Street
     [12] = true, -- SUPERMOD5 // Track
+}
+
+Config.Wheels = {
+    [0] = {name = 'wheel_lf', suspension = 'suspension_lf', broken = false},
+    [1] = {name = 'wheel_rf', suspension = 'suspension_rf', broken = false},
+    [2] = {name = 'wheel_lr', suspension = 'suspension_lr', broken = false},
+    [3] = {name = 'wheel_rr', suspension = 'suspension_rr', broken = false},
 }
