@@ -56,7 +56,7 @@ end
 
 local function GetWheelHit(vehicle)
     local coords = GetEntityCoords(vehicle)
-    local wheelIndex, _, _ = GetClosestVehicleNodeWithHeading(coords.x, coords.y, coords.z, 0, 3.0, 0)
+    local wheelIndex, location, heading = GetClosestVehicleNodeWithHeading(coords.x, coords.y, coords.z, 0, 3, 0)
     return wheelIndex
 end
 
@@ -108,31 +108,15 @@ CreateThread(function()
                     TaskPlayAnim(ped, "veh@low@front_ps@idle_duck", "sit", 1.0, 1.0, -1, 1, 0, 0, 0, 0)
                 end
                 Wait(Config.WaitAfterCrashBeforePlayerCanDrive)
+                local rotation = GetEntityRotation(vehicle)
+                if (rotation.x > 75.0 or rotation.x < -75.0 or rotation.y > 75.0 or rotation.y < -75.0) then
+                    TaskLeaveVehicle(ped, vehicle, 1)
+                end
+                Wait(1500)
                 ClearPedTasks(ped)
             end
         end
         Wait(sleep)
-    end
-end)
-
-CreateThread(function()
-    while true do
-        if showHits then
-            local entity = GetVehiclePedIsIn(PlayerPedId(), true) 
-            for wheelIndex, bone in pairs(Config.Wheels) do
-                if GetEntityBoneIndexByName(entity, bone.name) ~= -1 then       
-                    local offset = GetWorldPositionOfEntityBone(entity, GetEntityBoneIndexByName(entity, bone.name))
-                    if not offset then offset = GetWorldPositionOfEntityBone(entity, GetEntityBoneIndexByName(entity, bone.suspension)) end
-                    local health = math.floor(GetVehicleWheelHealth(entity, wheelIndex))
-                    local color = "~w~"
-                    if health > 900 then color = "~g~" end
-                    if health < 900 then color = "~y~" end
-                    if health < 700 then color = "~r~" end
-                    Draw3DText(offset.x, offset.y, offset.z, color .. "Health:"..health .."~w~", 4, 0.06, 0.06)
-                end
-            end
-        end
-        Wait(1)
     end
 end)
 
@@ -161,3 +145,23 @@ CreateThread(function()
     end
 end)
 
+CreateThread(function()
+    while true do
+        if showHits then
+            local entity = GetVehiclePedIsIn(PlayerPedId(), true) 
+            for wheelIndex, bone in pairs(Config.Wheels) do
+                if GetEntityBoneIndexByName(entity, bone.name) ~= -1 then       
+                    local offset = GetWorldPositionOfEntityBone(entity, GetEntityBoneIndexByName(entity, bone.name))
+                    if not offset then offset = GetWorldPositionOfEntityBone(entity, GetEntityBoneIndexByName(entity, bone.suspension)) end
+                    local health = math.floor(GetVehicleWheelHealth(entity, wheelIndex))
+                    local color = "~w~"
+                    if health > 900 then color = "~g~" end
+                    if health < 900 then color = "~y~" end
+                    if health < 700 then color = "~r~" end
+                    Draw3DText(offset.x, offset.y, offset.z, color .. "Health:"..health .."~w~", 4, 0.06, 0.06)
+                end
+            end
+        end
+        Wait(1)
+    end
+end)
