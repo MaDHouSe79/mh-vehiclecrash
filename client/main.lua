@@ -1,5 +1,25 @@
 local isCrashed = false
 local currentHeight = nil
+local showHits = false
+
+local function Draw3DText(x, y, z, txt, font, scale, num)
+    local _x, _y, _z = table.unpack(GetGameplayCamCoords())
+    local distance = 1 / GetDistanceBetweenCoords(_x, _y, _z, x, y, z, true) * 20
+    local value = distance * 1 / GetGameplayCamFov() * 100
+    SetTextScale(scale * value, num * value)
+    SetTextFont(font)
+    SetTextProportional(1)
+    SetTextDropshadow(1, 1, 1, 1, 255)
+    SetTextEdge(2, 0, 0, 0, 150)
+    SetTextDropShadow()
+    SetTextOutline()
+    SetTextEntry("STRING")
+    SetTextCentre(1)
+    AddTextComponentString(txt)
+    SetDrawOrigin(x, y, z, 0)
+    DrawText(0.0, 0.0)
+    ClearDrawOrigin()
+end
 
 local function LoadAnimDict(dict)
     RequestAnimDict(dict)
@@ -32,6 +52,12 @@ local function LossControl(vehicle)
     SetVehicleReduceGrip(vehicle, true)
     Wait(math.random(1, 3) * 1000)
     SetVehicleReduceGrip(vehicle, false)
+end
+
+local function GetWheelHit(vehicle)
+    local coords = GetEntityCoords(vehicle)
+    local wheelIndex, location, heading = GetClosestVehicleNodeWithHeading(coords.x, coords.y, coords.z, 0, 3.0, 0)
+    return wheelIndex
 end
 
 CreateThread(function()
@@ -83,6 +109,52 @@ CreateThread(function()
                 end
                 Wait(Config.WaitAfterCrashBeforePlayerCanDrive)
                 ClearPedTasks(ped)
+            end
+        end
+        Wait(sleep)
+    end
+end)
+
+CreateThread(function()
+    while true do
+        if showHits then
+            local entity = GetVehiclePedIsIn(PlayerPedId(), true) 
+            for wheelIndex, bone in pairs(Config.Wheels) do
+                if GetEntityBoneIndexByName(entity, bone.name) ~= -1 then       
+                    local offset = GetWorldPositionOfEntityBone(entity, GetEntityBoneIndexByName(entity, bone.name))
+                    if not offset then offset = GetWorldPositionOfEntityBone(entity, GetEntityBoneIndexByName(entity, bone.suspension)) end
+                    local health = math.floor(GetVehicleWheelHealth(entity, wheelIndex))
+                    local color = "~w~"
+                    if health > 900 then color = "~g~" end
+                    if health < 900 then color = "~y~" end
+                    if health < 700 then color = "~r~" end
+                    Draw3DText(offset.x, offset.y, offset.z, color .. "Health:"..health .."~w~", 4, 0.06, 0.06)
+                end
+            end
+        end
+        Wait(1)
+    end
+end)
+
+CreateThread(function()
+    while true do
+        local sleep = 5000
+        if IsPedInAnyVehicle(PlayerPedId(), false) then
+            local vehicle = GetVehiclePedIsIn(PlayerPedId(), false)
+            if GetPedInVehicleSeat(vehicle, -1) == PlayerPedId() then
+                sleep = 1000
+                local speed = math.ceil(GetEntitySpeed(vehicle) * 3.6)
+                if HasEntityCollidedWithAnything(vehicle) and speed >= Config.WheelBreakSpeed then
+                    local wheelIndex = GetWheelHit(vehicle)
+                    if wheelIndex ~= -1 then
+                        showHits = true
+                        SetVehicleWheelHealth(vehicle, wheelIndex, GetVehicleWheelHealth(vehicle, wheelIndex) - math.random(300, 500))
+                        local health = math.floor(GetVehicleWheelHealth(vehicle, wheelIndex))
+                        if health < 500 then SetVehicleTyreBurst(vehicle, 0, false, 1000.0) end
+                    end
+                    Wait(5000)
+                    showHits = false
+                end
             end
         end
         Wait(sleep)
