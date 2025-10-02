@@ -32,9 +32,9 @@
 
 # MH Vehicle Crash
 - It happens when you go to fast in to a corner, but it does not do this every time, there is a change to flip over, you can change this in the config file if you want.
-- Also there is a vehicle class check so you can only add classes that will flip over, for example a van or a normal car like a blista with nothing than default settings, cause it also checks the tire type, hi-end and race tires does flip your vehicle, only the stock tires can do that.
+- Also there is a vehicle class check so you can only add classes that will flip over, for example a van or a normal car like a blista with nothing than default settings, cause it also checks the tire type, hi-end and race tires does not flip your vehicle, only the stock tires can do that.
 - I made this script because a lot of players still drive like gta5 online if they are playing in a RP server
-- this will stop them for driving like gta5 online so your vehicle has more change to get on fire and blowup if you don't drive normal., you can drift but like i said there is a change you can flip over, so you can drive 10 time very good corners but the 11 time can go very wrong and it will set your vehicle on fire because if the crash and than bad things will happen ;)
+- this will stop them for driving like gta5 online so your vehicle has more change to get on fire and blowup if you don't drive normal., you can drift but like i said there is a change you can flip over, so you can drive 10 time very good corners but the 11 time can go very wrong and bad things will happen ;)
 
 # LICENSE
 [GPL LICENSE](./LICENSE)<br />
